@@ -8,3 +8,10 @@ an interval in which the increase in global mean temperature is quite modest.  A
 is that climate changes on a short scale can make it difficult to see the longer term trends, and
 that the effects of climate change differ significantly across geographic regions.
 
+## Design
+My initial design for the visualization is a set of line charts showing how the global average temperature
+has increased only slightly during the decades of the CDC study, while the number of abnormally hot summer days
+has gone up almost 3-fold from the beginning to the end of the study period.  This will be followed by a map
+of the US showing, at a county level, the average heat wave days over the span of the study, using an animation
+to step through the period, perhaps in 5-year increments.
+
