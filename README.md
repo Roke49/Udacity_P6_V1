@@ -14,4 +14,19 @@ has increased only slightly during the decades of the CDC study, while the numbe
 has gone up almost 3-fold from the beginning to the end of the study period.  This will be followed by a map
 of the US showing, at a county level, the average heat wave days over the span of the study, using an animation
 to step through the period, perhaps in 5-year increments.
+### Revision 1:
+I felt that the dataset needed more of an introduction, so provided this on this first page which is now index.html.  Moved
+the line chart to a separate page and eliminated the explanatory text from the visualization.  Added dashed lines showing
+minimum and maximum of the 2 variables displayed to highlight the major (3-fold) increase in heat wave days over the course
+of the study, comapred with the very modest change in global mean temperature.  Added the geographic visualization to follow
+after the line chart which allows user to see pattern at each time period by clicking at bottom of page.  
 
+## Feedback
+Feedback from 4 individuals received on first version, summarized as follows:
+Nate Whitson: suggested pulling out css and js into separate files; suggested making graphic resizable and a way to do this
+Suggested a cue, perhaps color, to make clear which Y-axis is associated with which line.
+Raul Audelo: consider graphic, ? background image, to highlight data and relationship to real-world problems. Let user know
+something is happening as data is being rolled out.  
+Cynthia Whitson-White commented that some of explanatory text needed to be clarified and simplified, and that when text
+was being shown step-wise that time for reading too short.  
+Jocelyn Audelo: try to add something at end of display making clear what the overall message is.
