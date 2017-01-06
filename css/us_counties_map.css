@@ -1,0 +1,35 @@
+.chart{
+  border: solid black;
+  border-width:thin;
+}
+.legend rect {
+  stroke: none;
+  shape-rendering: crispEdges;
+}
+.map{
+  border: solid red;
+  border-width: medium;
+}
+.legend_text {
+  font: 10px sans-serif;
+}
+.legend_title{
+  font: 12px sans-serif;
+}
+.epoch_button{
+  cursor:pointer;
+}
+.epoch_rect{
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+}
+.epoch_text{
+  font: 14px sans-serif;
+}
+.map_title{
+  font: 30px sans-serif;
+}
+#click_text{
+  font: 16px sans-serif;
+}
