@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<meta charset='utf-8'>
+<head>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+  <script src="js/legend.js"></script>
+  <link rel=stylesheet href="css/line_chart.css" type="text/css">
+  <title>Heat Wave Days Line Chart</title>
+  <script>
+    "use strict";
+    var formatYear = d3.time.format("%Y");
+    const TimerInterval = 7500;
+    function draw(error, tdata, hwdata){
+      if (error){
+        console.log("error");
+      }
+    // get width and height of the svg canvas
+    var canvas = d3.select(".canvas");
+    var cWidth = parseInt(canvas.style("width")),
+        cHeight = parseInt(canvas.style("height"));
+
+    // the global land-sea average temperature for the 20th century
+    // was 13.7°C.  Convert temps to F for use in visualization.
+    // Mean diurnal temperature range for the continental US is
+    // about 14°C (25.5°F).  This seems like a reasonable scale for
+    // plotting mean global temperature.  Mean high and low in Sacramento
+    // CA are 71 and 46 deg F, exactly 25 degrees apart.
+    const AvgGlobalTemp = 32 + 9 * 13.7 / 5; // in F
+    const TempRange = [46, 71]; // of Sac, CA
+    // for the plot of average global temp over time, add the century
+    // average to the Anomaly value converted to F
+    tdata.forEach(function(element){
+      element.Year = formatYear.parse(element.Year);
+      element.Anomaly = 9 * element.Anomaly / 5;
+      element.AnnualAverage = element.Anomaly + AvgGlobalTemp;
+    });
+    // heatwave days data: parse date, convert N_days to number
+    // make separate array for 5-year rolling means
+    var rmdata = [];
+    hwdata.forEach(function(element){
+      element.Year = formatYear.parse(element.Year);
+      element.N_days = +element.N_days;
+      if(element.RM != ""){
+        rmdata.push({"Year":element.Year, "RM":+element.RM});
+      }
+    });
+
+    var margin = {top: 50, right: 80, bottom: 35, left: 40};
+    var width = cWidth - (margin.right + margin.left);
+    var height = cHeight - (margin.top + margin.bottom);
+
+    var chart = d3.select(".canvas")
+      .append("g")
+        .attr("transform", "translate(" + margin.left +
+          "," + margin.top + ")");
+
+      var xextent = d3.extent(tdata, function(d){return d["Year"];});
+      var hwmax = d3.max(hwdata, function(d){return d.N_days;});
+      var hwmin = d3.min(hwdata, function(d){return d.N_days;});
+      var hwextent = [Math.floor(hwmin), Math.ceil(hwmax)];
+      var anomyscale = d3.scale.linear()
+        .domain([0,1.5])
+        .range([height, 0]);
+
+      var tyscale = d3.scale.linear()
+        .domain(TempRange)
+        .range([height, 0]);
+
+      var hwyscale = d3.scale.linear()
+        .domain(hwextent)
+        .range([height,0]);
+
+      var xscale = d3.time.scale()
+        .domain(xextent)
+        .rangeRound([0, width]);
+
+      var xaxis = d3.svg.axis()
+        .scale(xscale)
+        .orient("bottom");
+
+      var lyaxis = d3.svg.axis()
+        .scale(tyscale)
+        .orient("left");
+
+      var anomyaxis = d3.svg.axis()
+        .scale(anomyscale)
+        .orient("left");
+
+      var ryaxis = d3.svg.axis()
+        .scale(hwyscale)
+        .orient("right");
+
+      // to draw the line of just the temp anomaly
+      var anomline = d3.svg.line()
+        .x(function(d){return xscale(d["Year"]);})
+        .y(function(d){return anomyscale(d["Anomaly"]);});
+
+      // to draw the global average temperature line
+      var tline = d3.svg.line()
+        .x(function(d){
+          return xscale(d["Year"]);})
+        .y(function(d){
+          return tyscale(d["AnnualAverage"]);});
+      // to draw the heatwave days annual average line
+      var hwline = d3.svg.line()
+        .x(function(d){
+          return xscale(d["Year"]);})
+        .y(function(d){
+          return hwyscale(d["N_days"]);});
+      // to draw the rolling mean of the heat wave days
+      var rmline = d3.svg.line()
+        .x(function(d){
+          return xscale(d.Year);})
+        .y(function(d){
+          return hwyscale(d.RM);});
+
+      var seg_ct = 0;
+      drawLines();
+      var id = setInterval(drawLines, TimerInterval);
+
+      function drawLines(){
+        show_legend(seg_ct);
+        switch (seg_ct){
+          case 0:
+            // draw x axis, this doesn't change
+            chart.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xaxis);
+              //label x axis
+            chart.append("text")
+              .attr("x", width/2)
+              .attr("y", height + margin.bottom)
+              .attr("dy", "-0.5em")
+              .style("text-anchor", "middle")
+              .text("Year")
+              .attr("class", "axis_label");
+            // draw yaxis for temp anomaly line
+            chart.append("g")
+              .attr("class", "ly axis")
+              .attr("id", "anom_yaxis")
+              .call(anomyaxis);
+            // label it
+            chart.append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("x", 0 - height/2)
+              .attr("y", 0 - margin.left)
+              .attr("class", "axis_label")
+              .style("text-anchor", "middle")
+              .attr("dy", "1em")
+              .text("Degrees Fahrenheit")
+            // draw line of temp anomaly on this smaller scale
+            chart.append("path")
+              .datum(tdata)
+              .attr("d", anomline)
+              .attr("class", "tpath")
+              .attr("id", "anom_path")
+              .style("opacity", 0)
+              .transition().duration(1000)
+              .style("opacity", 1.0);
+            chart.append("text")
+              .attr("x", width/2)
+              .attr("y", 0)
+              .attr("dy", "-0.5em")
+              .attr("class", "chart_title")
+              .style("text-anchor", "middle")
+              .text("Mean Temperature Change From 20th Century Average");
+            seg_ct += 1;
+            break;
+          case 1:
+            // remove the anomaly y-axis, replace with temp axis
+            d3.select("#anom_yaxis").remove();
+            chart.append("g")
+              .attr("class", "ly axis")
+              .call(lyaxis);
+            d3.select("#anom_path").remove();
+            var temp_path = chart.append("path")
+              .datum(tdata)
+              .attr("d", tline)
+              .attr("class", "tpath")
+              .style("opacity", "0").transition().duration(1000)
+              .style("opacity", "1.0");
+            d3.select(".chart_title")
+              .text("Global Average Surface Temperature")
+            seg_ct += 1;
+            break;
+          case 2:
+          // add the y axis on the right
+          chart.append("g")
+            .attr("class", "ry axis")
+            .attr("transform", "translate(" + width + ", 0)")
+            .call(ryaxis);
+          // label it
+          chart.append("text")
+            .attr("transform", "rotate(+90)")
+            .attr("x", 0 + height/2)
+            .attr("y", 0 - width).attr("dy", "-2.5em")
+            .attr("class", "axis_label")
+            .style("text-anchor", "middle")
+            .text("# of Days");
+          d3.select(".chart_title")
+            .text("Global Average Temperature / US Heat Wave Days")
+          chart.append("path")
+            .datum(hwdata)
+            .attr("d", hwline)
+            .attr("class", "hwpath")
+            .attr("id", "hwpath1")
+            .style("opacity", 0)
+            .transition().duration(1000)
+            .style("opacity", 1.0);
+            seg_ct += 1;
+            break;
+          case 3:
+            d3.select("#hwpath1").remove();
+            chart.append("path")
+              .datum(rmdata)
+              .attr("d", rmline)
+              .attr("class", "hwpath")
+              .style("opacity", "0")
+              .transition().duration(1000)
+              .style("opacity", "1.0");
+            seg_ct += 1;
+            break;
+          case 4:
+            var hwmin = hwyscale(d3.min(rmdata, function(d){return d.RM;}));
+            var hwmax = hwyscale(d3.max(rmdata, function(d){return d.RM;}));
+            var tmin = tyscale(d3.min(tdata, function(d){return d.AnnualAverage;}));
+            var tmax = tyscale(d3.max(tdata, function(d){return d.AnnualAverage;}));
+            chart.append("line")
+              .attr("class", "hwmmline")
+              .attr("x1", 0).attr("x2", width)
+              .attr("y1", hwmin).attr("y2", hwmin);
+            chart.append("line")
+              .attr("class", "hwmmline")
+              .attr("x1", 0).attr("x2", width)
+              .attr("y1", hwmax).attr("y2", hwmax);
+            chart.append("line")
+              .attr("class", "tempmmline")
+              .attr("x1", 0).attr("x2", width)
+              .attr("y1", tmin).attr("y2", tmin);
+            chart.append("line")
+              .attr("class", "tempmmline")
+              .attr("x1", 0).attr("x2", width)
+              .attr("y1", tmax).attr("y2", tmax);
+          default:
+            add_buttons();
+            clearInterval(id);
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="outerContainer">
+    <svg class="canvas"></svg>
+    <svg class="legend_box"></svg>
+  </div>
+  <script>
+    "use strict";
+    queue()
+      .defer(d3.csv, "data/land_sea_temp_anomaly.csv")
+      .defer(d3.csv, "data/yearly_average_heat_wave_days.csv")
+      .await(draw);
+    //d3.select("navContainer").append("g");
+    //d3.select("#navBack")
+      //.on("click",function(){window.location = "index.html";});
+    //d3.select("#navNext")
+      //.on("click",function(){window.location = "us_counties_map.html";});
+  </script>
+</body>
+</html>

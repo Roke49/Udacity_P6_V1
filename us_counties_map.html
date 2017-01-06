@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Heat Wave Days Map</title>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+  <link rel=stylesheet href="css/us_counties_map.css" type="text/css">
+  <script type="text/javascript">
+    "use strict";
+    function draw_map(error, geo_data, five_yr_avg, c_map){
+      const TimerInterval = 2000;
+      // geo_data: US counties with state and county FIPS codes
+      // five_yr_avg: 5-year average heat-wave days per county, rounded
+      // to closest integer.
+      // c_map: matplotlib "Oranges" color map for range of five_yr_avg data
+      var margin = {top:75, right:75, bottom:75, left: 0},
+          cWidth = 1000,
+          cHeight = 600;
+      var svg = d3.select("body")
+        .append("svg")
+          .attr("width", cWidth)
+          .attr("height", cHeight)
+          .attr("class", "chart");
+      var width = cWidth - margin.left - margin.top;
+      var height = cHeight - margin.top - margin.bottom;
+
+      // map title
+      svg.append("text")
+        .attr("x", cWidth/2).attr("y", margin.top /2 )
+        .attr("text-anchor", "middle")
+        .text("U.S. Heat Wave Days: Five Year Average Over Time")
+        .attr("class", "map_title");
+
+      var map = d3.select("svg")
+        .append("g")
+          .attr("class", "map")
+          .attr("transform", "translate(" + margin.left + "," +
+              margin.top + ")");
+
+      function set_fill_color(epoch){
+        geo_data.features.forEach(function(element){
+          element.properties.FillColor =
+            c_map[five_yr_avg[epoch][element.properties.CountyCode]]
+            || "#ffffff";
+          });
+        }
+
+      // create the county code for each county in the map then
+      // create and populate a FillColor attribute from c_map data
+      geo_data.features.forEach(function(element){
+        element.properties.CountyCode = element.properties.STATEFP +
+          element.properties.COUNTYFP
+        });
+
+      var curr_epoch = 0;
+      set_fill_color(curr_epoch);
+
+      var c_map_keys = Object.keys(c_map);
+      var c_map_nkeys = [];
+      Object.keys(c_map).forEach(function(element){
+        c_map_nkeys.push(+element);
+      }); // for legend: arrays of c_map keys as string and numeric
+
+      var legX = margin.left + width + 0.3 * margin.right,
+          legY = Math.round(margin.top + 0.2 * height), // x,y origin of legnd
+          legW = 0.3 * margin.right, // w, h of each block
+          legH = Math.round(0.6 * height / c_map_keys.length);
+
+      var legscale = d3.scale.linear()
+          .domain(d3.extent(c_map_nkeys))
+          .range([height * 0.6, 0]);
+
+
+      var legend = d3.select("svg")
+        .append("g")
+        .attr("transform", "translate(" + legX + "," + legY + ")")
+        .attr("class", "legend");
+
+      legend.append("text")
+        .attr("x", legW/2)
+        .attr("dy", "-1em")
+        .attr("class", "legend_title")
+        .attr("text-anchor", "middle")
+        .text("# of days");
+
+      c_map_keys.forEach(function(element){
+        legend.append("rect")
+          .attr("x", 0)
+          .attr("y", (d3.max(c_map_nkeys) - element) * legH)
+          .attr("width", legW).attr("height", legH)
+          .attr("fill", c_map[element]);
+        if(+element % 5 == 0){
+          legend.append("text")
+            .attr("x", 0).attr("dx", "-1.5em")
+            .attr("y", (d3.max(c_map_nkeys) - element) * legH)
+            .attr("dy", "+0.5em")
+            .attr("class", "legend_text")
+            .text(element);
+        }
+        });
+      // this is for the rectangles at bottom showing which epoch
+      // is being plotted
+      var erHeight = 25;
+      var erWidth = 3.5 * erHeight;
+      var erPad = 0.4 * erWidth;
+      var epoch_rects = svg.append("g")
+        .attr("transform", "translate(" + (0.10 * width)  + "," +
+              (cHeight - 35) + ")")
+        .attr("class", "epoch_rects");
+
+      var projection = d3.geo.albersUsa()
+        .scale(1100)
+        .translate([width/2, height/2]);
+      var path = d3.geo.path().projection(projection);
+      const start_base = 1981, end_base = 1985;
+
+      var map_drawn = false;
+      update_map();
+
+      var id = setInterval(update_map, TimerInterval)
+
+      function update_map () {
+        // add rect for each epoch
+        var start_year = start_base + curr_epoch * 5;
+        var end_year = end_base + curr_epoch * 5;
+        var erText = start_year + "-" + end_year;
+        var erButton = epoch_rects.append("g")
+          .attr("transform", "translate(" + curr_epoch * (erWidth + erPad) +
+            "," + "0)")
+          .attr("class", "epoch_button").attr("id", "eb_" + curr_epoch)
+          .on("click", redraw_map);
+        erButton.append("rect")
+            .attr("width", erWidth).attr("height", erHeight)
+            .attr("rx", "5").attr("ry", "5")
+            .attr("class", "epoch_rect");
+        erButton.append("text")
+            .attr("x", erWidth / 2).attr("y", erHeight/2).attr("dy", "0.3em")
+            .attr("class", "epoch_text").attr("text-anchor", "middle")
+            .text(erText);
+
+        // update selection and data bind
+        var the_map = map.selectAll('path')
+          .data(geo_data.features);
+        // this should update old elements
+        the_map.style('fill', function(d){
+          return d.properties.FillColor;
+        });
+        // add new elements - only should happen on first pass
+        the_map.enter()
+          .append('path')
+          .attr('d', path)
+          .style('fill', function(d){
+            return d.properties.FillColor;
+          })
+          .style('stroke', 'black')
+          .style('stroke-width', 0.5);
+        curr_epoch += 1;
+        if (curr_epoch < 6){
+          set_fill_color(curr_epoch);
+        }
+        else {
+          epoch_rects.append("text")
+            .attr({"x":0, "y": -erHeight, "id":"click_text"})
+            .text("Click to view time period:");
+          var backButton = epoch_rects.append("g")
+            .attr("transform", "translate(" + curr_epoch * (erWidth + erPad) +
+              "," + "0)")
+            .attr("class", "epoch_button")
+            .on("click", function(){window.location = "line_chart.html"});
+          backButton.append("rect")
+              .attr("width", erWidth).attr("height", erHeight)
+              .attr("rx", "5").attr("ry", "5")
+              .attr("class", "epoch_rect");
+          backButton.append("text")
+              .attr("x", erWidth / 2).attr("y", erHeight/2).attr("dy", "0.3em")
+              .attr("class", "epoch_text").attr("text-anchor", "middle")
+              .text("Back");
+          map_drawn = true;
+          clearInterval(id);
+        };
+      }
+
+      function redraw_map(){
+        if(map_drawn == true) {
+          d3.selectAll(".epoch_button").select("rect")
+            .style("fill", "none");
+          d3.select(this).select("rect").style("fill", "lightgrey");
+          set_fill_color(+this.id.substr(-1));
+          map.selectAll('path')
+            .data(geo_data.features)
+            .style('fill', function(d){
+              return d.properties.FillColor;
+            });
+          }
+        }
+    }
+  </script>
+</head>
+
+<body>
+  <script>
+  queue()
+    .defer(d3.json, "data/us_counties_L48.geojson")
+    .defer(d3.json, "data/five_yr_avg.json")
+    .defer(d3.json, "data/color_map.json")
+    .await(draw_map);
+  </script>
+</body>
+</html>
