@@ -1,0 +1,32 @@
+References, final project:
+
+The main dataset on heat wave days 1981-2010 comes from:
+https://wonder.cdc.gov/NCA-heatwavedays-historic.html
+
+For data on the temperature anomaly global land-sea annual average:
+http://data.giss.nasa.gov/gistemp/ at Dec 16, 2016
+
+Hansen, J., R. Ruedy, M. Sato, and K. Lo, 2010: Global surface temperature change, Rev. Geophys., 48, RG4004, doi:10.1029/2010RG000345.
+
+Average monthly low and high temps for scaling y-axis of global temp chart:
+http://www.usclimatedata.com/climate/california/united-states/3174# at Dec 16, 2016
+
+http://www.sciencedirect.com/science/article/pii/S2212094714000346 at Dec 17, 2016
+for data on mean diurnal temperature range in the US, approximately 14 deg C, although decreasing.
+
+For the random color generator used to test the geo_json mapping:
+https://www.paulirish.com/2009/random-hex-color-code-snippets/ as at Dec 21, 2016
+
+For making buttons from <ul>:
+https://readlearncode.com/code-and-stuff/creating-buttons-from-ul-element/
+
+Color palettes used from:
+http://tableaufriction.blogspot.com/2012/11/finally-you-can-use-tableau-data-colors.html
+
+Several minor assists from:
+stackoverflow.com
+
+
+
+
+

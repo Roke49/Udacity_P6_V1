@@ -3,38 +3,88 @@
 <meta charset='utf-8'>
 <head>
   <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+  <script src="js/line_chart_modules.js"></script>
+  <script src="js/utilities.js"></script>
+  <script src="js/line_chart.js"></script>
+  <script src="js/map.js"></script>
   <link rel="stylesheet", href="css/index.css" type="text/css">
   <title>Climate Change And Heat Waves</title>
 </head>
 <body>
-  <h1>Climate Change And Extreme Heat Events In The US</h1>
-  <div id="textContainer">
-  <p>Understanding the potential impacts of climate change on
-    human health is of key importance as the Earth continues to warm.
-    One area of major concern is how much more morbidity and
-    mortality we may see from severe heat stress.  If daily maximum
-    temperatures simply increase by the amount that the Earth’s
-    average temperature is rising, this impact would be relatively
-    small.  On the other hand, if a warming climate brings
-    many more severe heat waves, the risk for serious adverse
-    impacts to human health is much higher.</p>
-  <p>In 2015 the U.S. Centers for Disease Control and Prevention
+  <section id="intro">
+    <div id="introTitle" class = "narrow">
+      Summer Heat Waves In The US:<br>Three Decades of Data
+    </div>
+    <div id="introText", class="mid">
+      <p>As the earth continues to warm, what effects are we likely to
+    see at the extremes of temperature?  If the rise in
+    the Earth's average temperature causes a comparable increase in
+    our typical daily temperature range, the effect would be fairly modest.
+    On the other hand, if we see more prolonged spells
+    of abnormally high temperature - heat waves - there can be profound
+    effects on society and human health: deaths from hyperthermia,
+    severe crop failures, power outages from excessive air conditioning
+    use, etc.
+      </p>
+      <p>In 2015 the U.S. Centers for Disease Control and Prevention
     (“CDC”) released an analysis of what they called “heat wave days”
-    in the U.S. for the years 1980-2010.  The data from this analysis
-    are the subject of the visualization that follows.  The underlying
-    data are the daily maximum and minimum air temperature, and a
-    calculated heat stress index, for each county in the US for the
-    months of May through September.  The definition of heat wave days was
+    in the U.S. for the years 1980-2010.  Heat wave days were defined as
     2 or more days in succession when the maximum air temperature
-    (or heat stress index) exceeded the 95th percentile for that date in
-    that county.  This visualization depicts the data based on maximum
-    daily temperature.  Additionally,  data showing the change in global mean
-    surface temperature of the Earth are portrayed</p>
-    <div id="nav">Next</div>
-  </div>
+    (or a calculated heat stress index) exceeded the 95th percentile for that
+    date in that county.  This visualization depicts the data based on maximum
+    daily temperature.  In addition, data on the change in global mean
+    surface temperature of the Earth during the period of the study are
+    shown for context.
+      </p>
+    </div>
+    <div id="nextAnchor"><a href="#graphs">Next<br>﹀</a></div>
+  </section>
+  <section id="graphs">
+    <div id="graphContainer">
+      <svg id="lineChartCanvas"></svg>
+    </div>
+    <div id="controlsContainer">
+      <div id="graphButtons">
+        <div id="buttonGroup">
+          <ul id="buttonList">
+            <li><a href="#" id="b1" class="graphButton">
+              Global Temperature<br>Change</a></li>
+            <li><a href="#" id="b2" class="graphButton">
+              Earth's Mean<br>Temperature</a></li>
+            <li><a href="#" id="b3" class="graphButton">
+              Yearly Average<br>Heatwave Days</a></li>
+            <li><a href="#" id="b4" class="graphButton">
+              Five-Yr Average<br>Heatwave Days</a></li>
+          </ul>
+        </div>
+        <div id="buttonInfo">
+            Click to show / hide selected chart
+        </div>
+      </div>
+      <div id=graphCaption>
+        <p id=captionTitle></p>
+        <p id=captionText></p>
+      </div>
+    </div>
+  </section>
+  <div id="mapAnchor"><a href="#map">Map<br>﹀<br></a></div>
+  <section id="map">
+    <div id="mapContainer">
+    </div>
+  </section>
   <script>
-    d3.select("#nav")
-      .on("click", function(){window.location="line_chart.html";});
+  // load the data and set up line chart and map
+    "use strict;"
+    queue()
+      .defer(d3.csv, "data/land_sea_temp_anomaly.csv")
+      .defer(d3.csv, "data/yearly_average_heat_wave_days.csv")
+      .await(setupLineCharts);
+    queue()
+      .defer(d3.json, "data/us_counties_L48.geojson")
+      .defer(d3.json, "data/five_yr_avg.json")
+      .defer(d3.json, "data/color_map.json")
+      .await(setup_map);
   </script>
 </body>
 </html>
