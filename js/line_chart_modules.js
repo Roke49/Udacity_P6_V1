@@ -121,7 +121,7 @@ function drawHeatWaveChart(chart, hwdata, dimensions, xscale){
     .attr("y", 0 - dimensions.width).attr("dy", "-2.5em")
     .attr("class", "axis_label")
     .style("text-anchor", "middle")
-    .text("# of Days");
+    .text("No. of Days");
   HeatWaveChart.append("path")
     .datum(hwdata)
     .attr("d", hwline)
@@ -162,7 +162,7 @@ function drawFiveYrAvg(chart, rmdata, hwdata, dimensions, xscale){
     .attr("y", 0 - dimensions.width).attr("dy", "-2.5em")
     .attr("class", "axis_label")
     .style("text-anchor", "middle")
-    .text("# of Days");
+    .text("No. of Days");
   FiveYrAvg.selectAll("circle")
       .data(rmsubset)
       .enter()
@@ -185,25 +185,28 @@ function setChartCaption(capNum){
       body.text("The graph depicts change in the Earth's mean temperature \
         relative to the average for the first half of the 20th cenury.  \
         The total rise was about 0.7 degrees Fahrenheit during the thirty \
-        years of the CDC study.");
+        years of the CDC study.  On this scale the rising trend is clear.");
       break;
     case 2:
       title.text("Earth's Mean Temperature: Absolute Value");
       body.text("Earth's actual average temperature plotted on \
         the scale of the typical daily springtime temperature \
-        range in a US city.  Change is barely perceptible.");
+        range in a US city.  On this scale, the overall rise during \
+        the years of the CDC study is barely perceptible.");
       break;
     case 3:
       title.text("Summer Heat Wave Days: Yearly Average");
       body.text("The annual average, for all US counties, of the \
-        number of heat wave days May through September.  Considerable \
-        year to year variation.")
+        number of heat wave days May through September.  There is \
+        considerable year to year variation, making it hard to see if \
+        there is any overall trend.")
       break;
     case 4:
       title.text("Summer Heat Wave Days: Five-Year Average");
       body.text("Average number of heat wave days for \
         five-year periods over the course of the CDC study. Size of circle \
-        denotes number of days.  A rising trend, especially at the end.")
+        denotes number of days.  A rising trend, is apparent, \
+        especially at the end.")
       break;
   }
 } //function setChartCaption end
