@@ -41,3 +41,19 @@ the order in which the charts should be viewed, but the user can go back and see
 rolling mean line in favor of 6 discrete 5-year average points, and added bubble-chart type circles to more clearly show the
 value at each data point, a double encoding of the 5-year average value.  I pulled all of the html into one file making a single
 page, allowing the user to more easily move, by scrolling, between the elements in the presentaiton.
+
+## Feedback on first submission:
+Udacity reviewer recommended:
+1. Expanding explanatory text in introduction to clearly state the findings communicated by the visualization.
+2. Change labeling on Y-axis from "# of days" to "No. of Days".
+3. Avoid having next subsection visible on landing section.
+4. Use dark orange for five-year average line to be consistent with other encodings.
+5. Perhaps adding average temperature change in the U.S. in addition to Global Temperature Change.
+6. Make sure key findings are visible on the graphic.
+7. Consider finding a way to drill down to more detail (I presume on the map).
+Design changes:
+* Intorductory text was changed as suggested.
+* Labeling on the Heat Wave Days Y-axis was changed as suggested.
+* Section spacing changed as suggested.
+* Line color changed as suggested.
+* I chose not to add additional charts or map features at this point.  I also thought it would be of interest to drill down on the map, showing change at the county level as a tooltip.  Another enhancement which would be interesting is to show start to end change for each county.  I chose not to add these enhancements now due to the time it would require.
